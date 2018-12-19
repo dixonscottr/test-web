@@ -3,9 +3,8 @@ package main
 import (
   "fmt"
   "net/http"
-  "gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
   "github.com/gorilla/mux"
-  "gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
+  "gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
    muxtrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gorilla/mux"
 )
 
@@ -15,8 +14,8 @@ func getHeaderValue(r *http.Request, key string) string {
 }
 
 func tagSpan(r *http.Request, key string, value string) {
-  if span, ok := tracer.SpanFromContext(r.Context()); ok {
-    fmt.Print(span)
+    if span, ok := tracer.SpanFromContext(r.Context()); ok {
+      fmt.Print(span)
       span.SetTag(key, value)
     }
 }
@@ -35,7 +34,7 @@ func GetWord(w http.ResponseWriter, r *http.Request) {
       w.Write([]byte(fmt.Sprintf("Word: %v\n", vars["word"])))
     }
 
-func CreateWord(w http.ResponseWriter, r *http.Request) {
+func GetID(w http.ResponseWriter, r *http.Request) {
       vars := mux.Vars(r)
       w.WriteHeader(http.StatusOK)
       w.Write([]byte(fmt.Sprintf("ID: %v\n", vars["id"])))
@@ -43,14 +42,9 @@ func CreateWord(w http.ResponseWriter, r *http.Request) {
 
 func main() {
       tracer.Start(tracer.WithDebugMode(true), tracer.WithPrioritySampling())
-	// r := mux.NewRouter()
-	   // tracer.Start(tracer.WithServiceName("my-service"), tracer.WithDebugMode(true))
       mux := muxtrace.NewRouter()
-            //r.HandleFunc("/", YourHandler)
       mux.HandleFunc("/", YourHandler)
       mux.HandleFunc("/words/{word}", GetWord)
-      mux.HandleFunc("/ids/{id}", CreateWord)
-      http.ListenAndServe(":8000", mux)
-      fmt.Printf("Hello, World!\n")
-	   //  defer tracer.Stop()
+      mux.HandleFunc("/ids/{id}", GetID)
+      http.ListenAndServe(":8888", mux)
     }
