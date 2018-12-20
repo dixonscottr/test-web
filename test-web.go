@@ -16,6 +16,7 @@ func getHeaderValue(r *http.Request, key string) string {
 func printSpan(r *http.Request) {
     if span, ok := tracer.SpanFromContext(r.Context()); ok {
       fmt.Print(span)
+      fmt.Print("\n")
     }
 }
 
@@ -27,10 +28,9 @@ func tagSpan(r *http.Request, key string, value string) {
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-      fmt.Printf("hello\n")
-      fmt.Print(r.Header)
       user_agent := getHeaderValue(r, "User-Agent")
       tagSpan(r, "user-agent", user_agent)
+      fmt.Print("Headers: %n", r.Header)
 	    w.Write([]byte("You hit me!\n"))
     }
 
@@ -50,8 +50,11 @@ func GetID(w http.ResponseWriter, r *http.Request) {
 func Test(w http.ResponseWriter, r *http.Request) {
       printSpan(r)
       resp, err := http.Get("http://localhost:8081/test2")
-      fmt.Print(resp.Header)
-      w.Write([]byte(fmt.Sprintf("Body: %v\n", body)))
+      if err != nil {
+        fmt.Print(err)
+      }
+      fmt.Printf("StatusCode: %d\n", resp.StatusCode)
+      fmt.Print("Headers: %n", resp.Header)
     }
 
 func main() {
